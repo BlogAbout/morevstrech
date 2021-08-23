@@ -1,8 +1,8 @@
-package ru.morevstrech.service.entity;
+package ru.morevstrech.service.dto;
 
 import org.springframework.security.core.GrantedAuthority;
 
-public enum Role implements GrantedAuthority {
+public enum ERole implements GrantedAuthority {
     ROLE_USER,
     ROLE_COMPANY,
     ROLE_MANAGER,

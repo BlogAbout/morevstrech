@@ -1,15 +1,18 @@
 package ru.morevstrech.service.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ru.morevstrech.service.entity.Role;
+import ru.morevstrech.service.dto.ERole;
+import ru.morevstrech.service.dto.PageListDto;
 import ru.morevstrech.service.entity.User;
 import ru.morevstrech.service.pojo.SignupRequest;
-import ru.morevstrech.service.repository.UserDetailsRepository;
+import ru.morevstrech.service.repository.UserInfoRepository;
 import ru.morevstrech.service.repository.UserRepository;
 
 import javax.transaction.Transactional;
@@ -20,13 +23,13 @@ import java.util.Set;
 @Service
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-    private final UserDetailsRepository userDetailsRepository;
+    private final UserInfoRepository userInfoRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserDetailsRepository userDetailsRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, UserInfoRepository userInfoRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.userDetailsRepository = userDetailsRepository;
+        this.userInfoRepository = userInfoRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -47,9 +50,10 @@ public class UserService implements UserDetailsService {
         user.setUsername(signupRequest.getUsername());
         user.setEmail(signupRequest.getEmail());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        user.setAccount(signupRequest.getAccount());
 
-        Set<Role> roles = new HashSet<>();
-        roles.add(Role.ROLE_USER);
+        Set<ERole> roles = new HashSet<>();
+        roles.add(ERole.ROLE_USER);
         user.setRoles(roles);
 
         user.setEnabled(true);
@@ -90,5 +94,21 @@ public class UserService implements UserDetailsService {
      */
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    /**
+     * <p>Возвращает список объектов разбиты на страницы, а также дополнительную информацию.</p>
+     * @param pageable интерфейс разбиения информации на страницы
+     * @return объект PageListDto(объекты на странице, текущая страница, общее число страниц, общее число объектов).
+     */
+    public PageListDto findAll(Pageable pageable) {
+        Page<User> page = userRepository.findAll(pageable);
+
+        return new PageListDto(
+                page.getContent(),
+                pageable.getPageNumber(),
+                page.getTotalPages(),
+                page.getTotalElements()
+        );
     }
 }

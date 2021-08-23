@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import ru.morevstrech.service.dto.ERole;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -35,6 +36,13 @@ public class User implements UserDetails {
     @Column(name = "locked")
     private boolean locked;
 
+    @Column(name = "account", length = 20)
+    private String account;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_user_id")
+    private User parentUser;
+
     @Column(name = "registration")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime registration;
@@ -43,10 +51,14 @@ public class User implements UserDetails {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastVisit;
 
-    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = ERole.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
-    private Set<Role> roles;
+    private Set<ERole> roles;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private UserInfo userInfo;
 
     public Long getId() {
         return id;
@@ -104,6 +116,30 @@ public class User implements UserDetails {
         this.locked = locked;
     }
 
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
+    }
+
+    public User getParentUser() {
+        return parentUser;
+    }
+
+    public void setParentUser(User parentUser) {
+        this.parentUser = parentUser;
+    }
+
+    public UserInfo getUserInfo() {
+        return userInfo;
+    }
+
+    public void setUserInfo(UserInfo userInfo) {
+        this.userInfo = userInfo;
+    }
+
     public LocalDateTime getRegistration() {
         return registration;
     }
@@ -129,11 +165,11 @@ public class User implements UserDetails {
         this.lastVisit = lastVisit;
     }
 
-    public Set<Role> getRoles() {
+    public Set<ERole> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Set<ERole> roles) {
         this.roles = roles;
     }
 
@@ -207,6 +243,7 @@ public class User implements UserDetails {
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", roles=" + roles +
+                ", userInfo=" + userInfo +
                 '}';
     }
 }

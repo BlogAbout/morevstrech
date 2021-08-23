@@ -56,16 +56,12 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authUser(@RequestBody SigninRequest signinRequest) {
-        System.out.println(signinRequest.getUsername());
-        System.out.println(signinRequest.getPassword());
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 signinRequest.getUsername(),
                 signinRequest.getPassword()
         ));
-        System.out.println("authentication" + authentication);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
-        System.out.println("jwt" + jwt);
 
         User user = (User) authentication.getPrincipal();
 
@@ -78,6 +74,7 @@ public class AuthController {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
+                user.getAccount(),
                 roles
         ));
     }
