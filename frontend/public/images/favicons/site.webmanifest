@@ -1,0 +1,20 @@
+{
+    "name": "\u041c\u043e\u0440\u0435 \u0412\u0441\u0442\u0440\u0435\u0447",
+    "short_name": "\u041c\u043e\u0440\u0435 \u0412\u0441\u0442\u0440\u0435\u0447",
+    "icons": [
+        {
+            "src": "https://morevstrech.ru/wp-content/themes/morevstrech/images/favicons/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://morevstrech.ru/wp-content/themes/morevstrech/images/favicons/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff",
+    "start_url": "https://morevstrech.ru/",
+    "display": "standalone"
+}

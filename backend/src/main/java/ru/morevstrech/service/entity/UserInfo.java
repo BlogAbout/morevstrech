@@ -7,7 +7,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users_info")
+@Table(name = "users_info", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "phone")
+})
 public class UserInfo {
     @Id
     private Long id;
