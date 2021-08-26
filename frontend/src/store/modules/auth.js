@@ -98,8 +98,10 @@ export default {
                     username: formData.username,
                     phone: formData.phone,
                     password: formData.password,
+                    business: formData.business,
                     code: formData.code
                 }
+
                 commit('setLoading', true)
                 this._vm.$axios
                     .post('/auth/signup', data)

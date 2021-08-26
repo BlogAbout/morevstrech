@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import ru.morevstrech.service.dto.ERole;
 import ru.morevstrech.service.dto.PageListDto;
 import ru.morevstrech.service.entity.User;
+import ru.morevstrech.service.entity.UserInfo;
 import ru.morevstrech.service.pojo.SignupRequest;
 import ru.morevstrech.service.repository.UserInfoRepository;
 import ru.morevstrech.service.repository.UserRepository;
@@ -48,24 +49,47 @@ public class UserService implements UserDetailsService {
     public User create(SignupRequest signupRequest) {
         User user = new User();
         user.setUsername(signupRequest.getUsername());
-        user.setEmail(signupRequest.getEmail());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
-        user.setAccount(signupRequest.getAccount());
 
         Set<ERole> roles = new HashSet<>();
-        roles.add(ERole.ROLE_USER);
+        if (signupRequest.isBusiness()) {
+            user.setAccount("company");
+            roles.add(ERole.ROLE_COMPANY);
+        } else {
+            user.setAccount("user");
+            roles.add(ERole.ROLE_USER);
+        }
         user.setRoles(roles);
 
-        user.setEnabled(true);
+        int code = (int) (Math.random() * (9999 - 1001)) + 1001;
+        user.setValidationCode(code);
+
+        user.setEnabled(false);
         user.setRegistration(LocalDateTime.now());
         user.setLastVisit(LocalDateTime.now());
 
-        return userRepository.save(user);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setPhone(signupRequest.getPhone());
+        userInfo.setUser(user);
+
+        userRepository.save(user);
+        userInfoRepository.save(userInfo);
+
+        // Важно - Доделать! Отправка кода на номер телефона через СМС
+
+        return user;
     }
 
     public User update(User userFromDb, User user) {
 
+
         return userRepository.save(userFromDb);
+    }
+
+    public void activate(User user) {
+        user.setValidationCode(0);
+        user.setEnabled(true);
+        userRepository.save(user);
     }
 
     /**
@@ -94,6 +118,10 @@ public class UserService implements UserDetailsService {
      */
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    public boolean existsByPhone(String phone) {
+        return userInfoRepository.existsByPhone(phone);
     }
 
     /**

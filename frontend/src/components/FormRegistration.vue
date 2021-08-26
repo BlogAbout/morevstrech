@@ -20,8 +20,8 @@
                             lazy-validation
                     >
                         <v-text-field
-                                v-model="login"
-                                :rules="loginRules"
+                                v-model="username"
+                                :rules="usernameRules"
                                 :disabled="submitCode !== ''"
                                 label="Логин"
                                 placeholder="Логин"
@@ -64,8 +64,8 @@
                                 v-model="validCode"
                                 :rules="validCodeRules"
                                 type="number"
-                                label="Проверочный код"
-                                placeholder="Проверочный код"
+                                label="Проверочный код из СМС"
+                                placeholder="Проверочный код из СМС"
                                 prepend-icon="fa-lock"
                                 required
                         ></v-text-field>
@@ -116,12 +116,12 @@
             showPassword: false,
             valid: false,
             business: false,
-            login: '',
+            username: '',
             phone: '',
             password: '',
             submitCode: '',
-            validCode: '',
-            loginRules: [
+            validCode: 0,
+            usernameRules: [
                 v => !!v || 'Укажите логин'
             ],
             phoneRules: [
@@ -132,7 +132,7 @@
                 v => (v && v.length >= 5) || 'Пароль должен быть больше 10 символов'
             ],
             validCodeRules: [
-                v => !!v || 'Укажите проверочный код',
+                v => !!v || 'Укажите проверочный код из СМС',
             ]
         }),
         computed: {
@@ -145,40 +145,59 @@
                 if (!this.$refs.form.validate())
                     return
 
-                this.submitCode = 'text'
-
                 const formData = {
                     username: this.username,
                     phone: this.phone,
                     password: this.password,
+                    business: this.business,
                     code: this.validCode
                 }
 
-                const credentials = {
-                    username: this.username,
-                    password: this.password
+                if (!this.submitCode) {
+                    await this.$store.dispatch('userSignUp', formData)
+                        .then((response) => {
+                            if (response.status === 200) {
+                                this.submitCode = response.data.validationCode
+                                this.validCode = response.data.validationCode
+                            } else {
+                                if (messages[response.data.code])
+                                    this.$message(messages[response.data.code])
+                                else
+                                    this.$message(response.data.message)
+                            }
+                        })
+                        .catch((error) => {
+                            this.$error(error.message)
+                        })
+                } else {
+                    const credentials = {
+                        username: this.username,
+                        password: this.password
+                    }
+
+                    await this.$store.dispatch('userSignUp', formData)
+                        .then((response) => {
+                            if (messages[response.data.code])
+                                this.$message(messages[response.data.code])
+                            else
+                                this.$message(response.data.message)
+
+                            if (response.status === 200) {
+                                this.$store.dispatch('userSignIn', credentials)
+                                    .then(() => {
+                                        this.$message(messages['welcome'])
+                                        this.$emit('dialog', '')
+                                        this.$router.push('/me')
+                                    })
+                                    .catch((error) => {
+                                        this.$error(error.message)
+                                    })
+                            }
+                        })
+                        .catch((error) => {
+                            this.$error(error.message)
+                        })
                 }
-
-                await this.$store.dispatch('userSignUp', formData)
-                    .then((response) => {
-                        if (messages[response.data.message])
-                            this.$message(messages[response.data.message])
-
-                        if (response.status === 200) {
-                            this.$store.dispatch('userSignIn', credentials)
-                                .then(() => {
-                                    this.$message(messages['welcome'])
-                                    this.$emit('dialog', '')
-                                    this.$router.push('/me')
-                                })
-                                .catch((error) => {
-                                    this.$error(error.message)
-                                })
-                        }
-                    })
-                    .catch((error) => {
-                        this.$error(error.message)
-                    })
             }
         }
     }

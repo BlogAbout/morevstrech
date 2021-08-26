@@ -20,8 +20,8 @@
                             lazy-validation
                     >
                         <v-text-field
-                                v-model="login"
-                                :rules="loginRules"
+                                v-model="username"
+                                :rules="usernameRules"
                                 label="Логин"
                                 placeholder="Логин"
                                 prepend-icon="fa-user"
@@ -80,9 +80,9 @@
         },
         data: () => ({
             valid: false,
-            login: '',
+            username: '',
             password: '',
-            loginRules: [
+            usernameRules: [
                 v => !!v || 'Укажите логин'
             ],
             passwordRules: [
@@ -107,8 +107,10 @@
 
                 await this.$store.dispatch('userSignIn', credentials)
                     .then((response) => {
-                        if (messages[response.data.message])
-                            this.$message(messages[response.data.message])
+                        if (messages[response.data.code])
+                            this.$message(messages[response.data.code])
+                        else
+                            this.$message(response.data.message)
 
                         if (response.status === 200) {
                             this.$emit('dialog', '')

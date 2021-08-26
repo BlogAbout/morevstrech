@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import ru.morevstrech.service.config.jwt.JwtUtils;
@@ -34,48 +35,70 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest) {
-        if (userService.existsByUsername(signupRequest.getUsername()))
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new MessageResponse(
-                    "username-is-exist",
-                    "Пользователь с таким именем пользователя уже существует."
+        if (signupRequest.getCode() == 0) {
+            if (userService.existsByUsername(signupRequest.getUsername()))
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(new MessageResponse(
+                        "username-is-exist",
+                        "Пользователь с таким именем пользователя уже существует."
+                ));
+
+            if (userService.existsByPhone(signupRequest.getPhone()))
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(new MessageResponse(
+                        "phone-is-exist",
+                        "Пользователь с таким номером телефона уже существует."
+                ));
+
+            User user = userService.create(signupRequest);
+
+            return ResponseEntity.status(HttpStatus.OK).body(user);
+        } else {
+            User user = (User) userService.loadUserByUsername(signupRequest.getUsername());
+
+            if (user.getValidationCode() != signupRequest.getCode())
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(new MessageResponse(
+                        "validation-code-error",
+                        "Код проверки неверный."
+                ));
+
+            userService.activate(user);
+
+            return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse(
+                    "user-created",
+                    "Вы успешно зарегистрировались."
             ));
-
-        if (userService.existsByEmail(signupRequest.getEmail()))
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new MessageResponse(
-                    "email-is-exist",
-                    "Пользователь с таким e-mail уже существует."
-            ));
-
-        User user = userService.create(signupRequest);
-
-        return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse(
-                "user-created",
-                "Вы успешно зарегистрировались."
-        ));
+        }
     }
 
     @PostMapping("/signin")
     public ResponseEntity<?> authUser(@RequestBody SigninRequest signinRequest) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                signinRequest.getUsername(),
-                signinRequest.getPassword()
-        ));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        try {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    signinRequest.getUsername(),
+                    signinRequest.getPassword()
+            ));
 
-        User user = (User) authentication.getPrincipal();
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtUtils.generateJwtToken(authentication);
 
-        Set<String> roles = user.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toSet());
+            User user = (User) authentication.getPrincipal();
 
-        return ResponseEntity.status(HttpStatus.OK).body(new JwtResponse(
-                jwt,
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getAccount(),
-                roles
-        ));
+            Set<String> roles = user.getAuthorities().stream()
+                    .map(item -> item.getAuthority())
+                    .collect(Collectors.toSet());
+
+            return ResponseEntity.status(HttpStatus.OK).body(new JwtResponse(
+                    jwt,
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getAccount(),
+                    roles
+            ));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new MessageResponse(
+                    "authentication-error",
+                    "Логин или пароль указаны неверно"
+            ));
+        }
     }
 }

@@ -62,6 +62,9 @@ public class User implements UserDetails {
     @PrimaryKeyJoinColumn
     private UserInfo userInfo;
 
+    @Column(name = "validation_code")
+    private int validationCode;
+
     public Long getId() {
         return id;
     }
@@ -173,6 +176,14 @@ public class User implements UserDetails {
 
     public void setRoles(Set<ERole> roles) {
         this.roles = roles;
+    }
+
+    public int getValidationCode() {
+        return validationCode;
+    }
+
+    public void setValidationCode(int validationCode) {
+        this.validationCode = validationCode;
     }
 
     @Override
