@@ -8,6 +8,7 @@ export default {
     'user-created': 'Вы успешно зарегистрировались',
     'welcome': 'Добро пожаловать',
     'logout': 'Возвращайтесь скорее!',
+    'not-auth': 'Вы не авторизованы!',
     'error-item-create': 'Ошибка создания новой записи',
     'error-item-create-from-json': 'Критическая ошибка: объект не создан',
     'error-item-update': 'Ошибка обновления записи',

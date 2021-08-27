@@ -4,14 +4,9 @@
             <v-card>
                 <v-card-title class="text-h5">Вход</v-card-title>
                 <v-card-text>
-                    Нажимая "Войти", вы принимаете наши
-                    <router-link to="/terms-conditions" custom v-slot="{ href, route, navigate }">
-                        <a :href="href" @click="navigate">Условия</a>
-                    </router-link>.
+                    Нажимая "Войти", вы принимаете наши <router-link to="/terms-conditions">Условия</router-link>.
                     Чтобы узнать, как мы обрабатываем ваши данные, ознакомьтесь с нашей
-                    <router-link to="/privacy-policy" custom v-slot="{ href, route, navigate }">
-                        <a :href="href" @click="navigate">Политикой конфиденциальности</a>
-                    </router-link>.
+                    <router-link to="/privacy-policy">Политикой конфиденциальности</router-link>.
                 </v-card-text>
                 <v-card-text>
                     <v-form
@@ -29,10 +24,14 @@
                         ></v-text-field>
                         <v-text-field
                                 v-model="password"
+                                :append-icon="showPassword ? 'fa-eye' : 'fa-eye-slash'"
+                                :type="showPassword ? 'text' : 'password'"
                                 :rules="passwordRules"
                                 label="Пароль"
                                 placeholder="Пароль"
                                 prepend-icon="fa-key"
+                                @click:append="showPassword = !showPassword"
+                                counter
                                 required
                         ></v-text-field>
                         <v-btn
@@ -79,6 +78,7 @@
             dialog: Boolean
         },
         data: () => ({
+            showPassword: false,
             valid: false,
             username: '',
             password: '',
@@ -87,8 +87,8 @@
             ],
             passwordRules: [
                 v => !!v || 'Укажите пароль',
-                v => (v && v.length >= 5) || 'Пароль должен быть больше 5 символов'
-            ]
+                v => (v && v.length >= 5) || 'Пароль должен быть больше 10 символов'
+            ],
         }),
         computed: {
             ...mapGetters({

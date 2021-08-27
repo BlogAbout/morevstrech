@@ -4,14 +4,9 @@
             <v-card>
                 <v-card-title class="text-h5">Создать аккаунт</v-card-title>
                 <v-card-text>
-                    Нажимая кнопку "Создать аккаунт", вы принимаете наши
-                    <router-link to="/terms-conditions" custom v-slot="{ href, route, navigate }">
-                        <a :href="href" @click="navigate">Условия</a>
-                    </router-link>.
+                    Нажимая кнопку "Создать аккаунт", вы принимаете наши <router-link to="/terms-conditions">Условия</router-link>.
                     Чтобы узнать, как мы обрабатываем ваши данные, ознакомьтесь с нашей
-                    <router-link to="/privacy-policy" custom v-slot="{ href, route, navigate }">
-                        <a :href="href" @click="navigate">Политикой конфиденциальности</a>
-                    </router-link>.
+                    <router-link to="/privacy-policy">Политикой конфиденциальности</router-link>.
                 </v-card-text>
                 <v-card-text>
                     <v-form
